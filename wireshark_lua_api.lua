@@ -4,6 +4,8 @@ Base Wireshark proto definitions.
 Annotations are EmmyLua format, as used by the Sumneko VSCode extension.
 ]]
 
+ENC_BIG_ENDIAN = 0
+ENC_LITTLE_ENDIAN = 0
 
 ---@enum FtypesEnum
 --NOTE[javi]: Not real values of enum
@@ -1116,7 +1118,7 @@ Mode: Retrieve or assign.
 
 The ProtoField's Lua table of this dissector.
 ]]
----@type ProtoField[]
+---@class
 Proto.fields = {}
 
 --[[
@@ -1126,7 +1128,7 @@ The expert info Lua table of this Proto.
 
 Since: 1.11.3
 ]]
----@type ProtoExpert[]
+---@class
 Proto.experts = {}
 
 
@@ -1319,7 +1321,7 @@ Creates a ProtoField for a boolean true/false value.
 ]]
 ---@param abbr string Abbreviated name of the field (the string used in filters).
 ---@param name? string Actual name of the field (the string that appears in the tree)
----@param display? BaseEnum How wide the parent bitfield is (base.NONE is used for NULL-value).
+---@param display? integer|BaseEnum How wide the parent bitfield is (base.NONE is used for NULL-value).
 ---@param valuestring? table A table containing the text that corresponds to the values
 ---@param mask? integer|string|UInt64 Integer, String or UInt64 mask of this field
 ---@param desc? string Description of the field
@@ -1546,7 +1548,7 @@ Create a Field extractor
 Errors:
 * A Field extractor must be defined before Taps or Dissectors get called
 ]]
----@return Field field The field extractor
+---@return FieldInfo The field extractor
 function Field.new(fieldname) end
 
 --[[
@@ -2989,6 +2991,11 @@ If the ProtoField represents a numeric value (int, uint or float), then it's tre
 
 This function has a complicated form: 'treeitem:add([protofield,] [tvbrange,] value], label)', such that if the first argument is a ProtoField or a Proto, the second argument is a TvbRange, and a third argument is given, it's a value; but if the second argument is a non-TvbRange, then it's the value (as opposed to filling that argument with 'nil', which is invalid for this function). If the first argument is a non-ProtoField and a non-Proto then this argument can be either a TvbRange or a label, and the value is not in use.
 
+TreeItem:add(protofield: Proto|ProtoField, tvbrange: TvbRange, value: any, label: string)  
+TreeItem:add(protofield: Proto|ProtoField, value: any, label: string)  
+TreeItem:add(tvbrange: TvbRange, label: string)  
+TreeItem:add(label: string)
+
 Example:
 
 ```lua
@@ -3036,8 +3043,8 @@ udp_table = DissectorTable.get("udp.port")
 udp_table:add(7777, proto_foo)
 ```
 ]]
----@param protofield? Proto|ProtoField The ProtoField field or Proto protocol object to add to the tree
----@param tvbrange? TvbRange The TvbRange of bytes in the packet this tree item covers/represents
+---@param protofield? Proto|ProtoField|TvbRange|string The ProtoField field or Proto protocol object to add to the tree
+---@param tvbrange? TvbRange|any The TvbRange of bytes in the packet this tree item covers/represents
 ---@param value? any The field's value, instead of the ProtoField/Proto one
 ---@param label? string One or more strings to use for the tree item label, instead of the ProtoField/Proto one
 ---@return TreeItem tree_item The new child TreeItem.
